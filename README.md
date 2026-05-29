@@ -45,22 +45,236 @@ The management team needed answers to these key questions:
 
 ---
 
-## DAX Measures Used
+## # 🧠 DAX Measures — E-Commerce Sales Dashboard
+
+All DAX measures used in this Power BI project, organized by category.
+
+---
+
+## 📅 Calendar Table
 
 ```dax
-Total Sales = SUM(Orders[Sales])
-
-Total Profit = SUM(Orders[Profit])
-
-Profit Margin % = DIVIDE([Total Profit], [Total Sales])
-
-Total Orders = COUNTROWS(Orders)
-
-YoY Sales Growth = 
-DIVIDE(
-    [Total Sales] - CALCULATE([Total Sales], SAMEPERIODLASTYEAR(Dates[Date])),
-    CALCULATE([Total Sales], SAMEPERIODLASTYEAR(Dates[Date]))
+-- Dynamic Calendar Table (start to end from order data)
+Calendar = CALENDAR(
+    MIN('E-Commerce Data'[Order Date]),
+    MAX('E-Commerce Data'[Order Date])
 )
+
+-- Year Column
+Year = YEAR('Calendar'[Calendar Date])
+
+-- Month Name Column
+Month = FORMAT('Calendar'[Calendar Date], "MMMM")
+
+-- Month Number Column (for sorting)
+Month Number = MONTH('Calendar'[Calendar Date])
+```
+
+---
+
+## 💰 Sales Measures
+
+```dax
+-- Year to Date Sales
+YTD Sales = 
+TOTALYTD(
+    SUM('E-Commerce Data'[Sales Per Order]),
+    'Calendar'[Calendar Date]
+)
+
+-- Previous Year to Date Sales
+Previous YTD Sales = 
+CALCULATE(
+    SUM('E-Commerce Data'[Sales Per Order]),
+    DATESYTD(
+        SAMEPERIODLASTYEAR('Calendar'[Calendar Date])
+    )
+)
+
+-- Year on Year Sales Growth %
+YoY Sales = 
+DIVIDE(
+    [YTD Sales] - [Previous YTD Sales],
+    [Previous YTD Sales]
+)
+```
+
+---
+
+## 💵 Profit Measures
+
+```dax
+-- Year to Date Profit
+YTD Profit = 
+TOTALYTD(
+    SUM('E-Commerce Data'[Profit Per Order]),
+    'Calendar'[Calendar Date]
+)
+
+-- Previous Year to Date Profit
+Previous YTD Profit = 
+CALCULATE(
+    SUM('E-Commerce Data'[Profit Per Order]),
+    DATESYTD(
+        SAMEPERIODLASTYEAR('Calendar'[Calendar Date])
+    )
+)
+
+-- Year on Year Profit Growth %
+YoY Profit = 
+DIVIDE(
+    [YTD Profit] - [Previous YTD Profit],
+    [Previous YTD Profit]
+)
+```
+
+---
+
+## 📦 Quantity Measures
+
+```dax
+-- Year to Date Quantity
+YTD Quantity = 
+TOTALYTD(
+    SUM('E-Commerce Data'[Order Quantity]),
+    'Calendar'[Calendar Date]
+)
+
+-- YTD Quantity with # symbol (custom format)
+YTD Concatenated Quantity = 
+CONCATENATE(
+    "#",
+    FORMAT(
+        DIVIDE([YTD Quantity], 1000),
+        "0.0"
+    ) & "K"
+)
+
+-- Previous Year to Date Quantity
+Previous YTD Quantity = 
+CALCULATE(
+    SUM('E-Commerce Data'[Order Quantity]),
+    DATESYTD(
+        SAMEPERIODLASTYEAR('Calendar'[Calendar Date])
+    )
+)
+
+-- Year on Year Quantity Growth %
+YoY Quantity = 
+DIVIDE(
+    [YTD Quantity] - [Previous YTD Quantity],
+    [Previous YTD Quantity]
+)
+```
+
+---
+
+## 📊 Profit Margin Measures
+
+```dax
+-- Profit Margin %
+Profit Margin = 
+DIVIDE(
+    SUM('E-Commerce Data'[Profit Per Order]),
+    SUM('E-Commerce Data'[Sales Per Order])
+)
+
+-- Year to Date Profit Margin
+YTD Profit Margin = 
+TOTALYTD(
+    [Profit Margin],
+    'Calendar'[Calendar Date]
+)
+
+-- Previous Year to Date Profit Margin
+Previous YTD Profit Margin = 
+CALCULATE(
+    [Profit Margin],
+    DATESYTD(
+        SAMEPERIODLASTYEAR('Calendar'[Calendar Date])
+    )
+)
+
+-- Year on Year Profit Margin Growth %
+YoY Profit Margin = 
+DIVIDE(
+    [YTD Profit Margin] - [Previous YTD Profit Margin],
+    [Previous YTD Profit Margin]
+)
+```
+
+---
+
+## 🔺 Dynamic Icons (Trend Arrows)
+
+```dax
+-- Sales Trend Icon
+Sales Icon = 
+VAR positive_icon = UNICHAR(9650)   -- ▲ Up Arrow
+VAR negative_icon = UNICHAR(9660)   -- ▼ Down Arrow
+VAR result = IF([YoY Sales] > 0, positive_icon, negative_icon)
+RETURN result
+
+-- Profit Trend Icon
+Profit Icon = 
+VAR positive_icon = UNICHAR(9650)
+VAR negative_icon = UNICHAR(9660)
+VAR result = IF([YoY Profit] > 0, positive_icon, negative_icon)
+RETURN result
+
+-- Quantity Trend Icon
+Quantity Icon = 
+VAR positive_icon = UNICHAR(9650)
+VAR negative_icon = UNICHAR(9660)
+VAR result = IF([YoY Quantity] > 0, positive_icon, negative_icon)
+RETURN result
+
+-- Profit Margin Trend Icon
+Profit Margin Icon = 
+VAR positive_icon = UNICHAR(9650)
+VAR negative_icon = UNICHAR(9660)
+VAR result = IF([YoY Profit Margin] > 0, positive_icon, negative_icon)
+RETURN result
+```
+
+---
+
+## 🎨 Dynamic Background Colors (Conditional Formatting)
+
+```dax
+-- Sales Background Color
+Sales Color = 
+IF([YoY Sales] > 0, "Green", "Red")
+
+-- Profit Background Color
+Profit Color = 
+IF([YoY Profit] > 0, "Green", "Red")
+
+-- Quantity Background Color
+Quantity Color = 
+IF([YoY Quantity] > 0, "Green", "Red")
+
+-- Profit Margin Background Color
+Profit Margin Color = 
+IF([YoY Profit Margin] > 0, "Green", "Red")
+```
+
+---
+
+## 📌 Key DAX Functions Used
+
+| Function | Purpose |
+|---|---|
+| `TOTALYTD` | Calculates year-to-date value |
+| `SAMEPERIODLASTYEAR` | Returns same period from previous year |
+| `DATESYTD` | Returns year-to-date dates |
+| `CALCULATE` | Modifies filter context |
+| `DIVIDE` | Safe division (avoids divide by zero) |
+| `UNICHAR` | Adds special characters (arrows) |
+| `FORMAT` | Custom number formatting |
+| `CONCATENATE` | Combines text values |
+| `IF` | Conditional logic |
+| `VAR / RETURN` | Variables for cleaner DAX |
 ```
 
 ---
