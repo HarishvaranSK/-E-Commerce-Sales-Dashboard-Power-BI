@@ -1,8 +1,5 @@
 # -E-Commerce-Sales-Dashboard-Power-BI
 Power BI Dashboard analyzing E-Commerce sales, profit &amp; regional performance using DAX &amp; Power Query
-# 🛒 E-Commerce Sales Dashboard | Power BI
-
-![Dashboard]("C:\Users\PHOENIX\Videos\Screen Recordings\Screen Recording 2025-06-16 110132.mp4")
 
 ## 📌 Project Overview
 
